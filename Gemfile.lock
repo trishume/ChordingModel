@@ -1,0 +1,10 @@
+GEM
+  remote: https://rubygems.org/
+  specs:
+    state_machine (1.2.0)
+
+PLATFORMS
+  ruby
+
+DEPENDENCIES
+  state_machine

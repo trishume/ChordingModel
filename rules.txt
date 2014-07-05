@@ -1,0 +1,32 @@
+# Commands
+# - sided combination
+# @ two sided combination
+# ! special command
+# # comment
+#
+# Side modifiers
+# = both hands
+# > right side
+# < left side
+# lowercase: left side
+# uppercase: right side
+
+# Starting Position
+- tj =d
+- js >ss
+- jn =w
+- tjn <dr >nd
+- stn <st >nst
+- njts >nds
+@ oI a
+! snSN BackWord
+
+# E Keys
+- oe <oo
+- ie >ie
+@ oIE aa
+@ oeE oo
+
+# R Keys
+- jn >ry
+
