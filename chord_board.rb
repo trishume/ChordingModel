@@ -83,7 +83,8 @@ analyzers = {
   word: Analyzer.new("Words",dofreqs:false),
   start: Analyzer.new("start",filter:CONSONANTS),
   vowels: Analyzer.new("vowels",filter:VOWELS),
-  endings: Analyzer.new("end",filter:CONSONANTS)
+  endings: Analyzer.new("end",filter:CONSONANTS),
+  consonants: Analyzer.new("consonants",filter:CONSONANTS),
 }
 File.foreach(ARGV[0] || "/usr/share/dict/words") do |line|
   word = line.chomp.downcase
@@ -93,10 +94,10 @@ File.foreach(ARGV[0] || "/usr/share/dict/words") do |line|
     analyzers[:start].add(syllable.start)
     analyzers[:vowels].add(syllable.middle)
     analyzers[:endings].add(syllable.ending)
+
+    analyzers[:consonants].add(syllable.start)
+    analyzers[:consonants].add(syllable.ending)
   end
 end
 puts "========== REPORT - THRESH=#{Analyzer::THRESH} - INPUT=#{ARGV[0]} ==========="
 analyzers.each { |name,a| a.report}
-common = analyzers[:start].zeros & analyzers[:endings].zeros
-puts "Common consonant bads: #{common.size}/442"
-p common
