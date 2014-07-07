@@ -13,33 +13,40 @@ class Syllable
 end
 
 class Analyzer
+  THRESH = 0.0001
   attr_accessor :pairs
   def initialize(name, options = {})
     @options = {filter:/.*/,dofreqs:true}
     @options.merge!(options)
     @name = name
-    @pairs = Hash.new(0)
+    @pairs = Hash.new
     ('a'..'z').each do |first|
       next unless first =~ @options[:filter]
-      ('a'..'z').each do |second|
+      (first..'z').each do |second|
         next unless second =~ @options[:filter]
         pair = first + second
         @pairs[pair] = 0
       end
     end
     @freqs = Hash.new(0)
+    @total = 0
   end
   def add(str)
+    @total += 1
     @freqs[str] += 1 if @options[:dofreqs]
-    (0..str.length - 2).each do |i|
-      p = str[i,2]
-      @pairs[p] += 1
+    str.each_char.with_index do |c1, i|
+      ((i+1)..(str.length-1)).each do |i2|
+       p = [str[i2],c1].sort.join('')
+       next unless @pairs[p]
+       @pairs[p] += 1
+      end
     end
   end
   def zeros
+    max_freq = THRESH * @total
     zeros = []
     @pairs.each do |key,val|
-      next unless val == 0
+      next unless val && val < max_freq
       zeros << key
     end
     zeros
@@ -88,7 +95,7 @@ File.foreach(ARGV[0] || "/usr/share/dict/words") do |line|
     analyzers[:endings].add(syllable.ending)
   end
 end
-puts "========== REPORT ==========="
+puts "========== REPORT - THRESH=#{Analyzer::THRESH} - INPUT=#{ARGV[0]} ==========="
 analyzers.each { |name,a| a.report}
 common = analyzers[:start].zeros & analyzers[:endings].zeros
 puts "Common consonant bads: #{common.size}/442"
