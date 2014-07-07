@@ -26,6 +26,9 @@ class StrokeModel
       transition :start => same, :middle => :final, :final => same, :special => :fail,
         :special => :fail, :begin => :start
     end
+    event :ending_e do
+      transition :final => :special
+    end
     event :special do
       transition :begin => :special
       transition any => :fail
@@ -82,11 +85,14 @@ class StrokeModel
   end
 
   def add(c)
+    c = '&' if c=='e' && self.final?
     case c
     when /[bcdfghjklmnpqrstvwxyz]/i
       self.consonant
     when /[aoeui]/i
       self.vowel
+    when '&'
+      self.ending_e
     else
       self.special
     end
