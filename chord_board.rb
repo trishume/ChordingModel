@@ -78,6 +78,44 @@ def syllables(word)
   return [Syllable.new(start,middle,last)] + syllables(rest[last.length..-1])
 end
 
+class TriangleFinder
+  attr_accessor :matrix
+  def initialize(analyzer,letters)
+    @analyzer = analyzer
+    @letters = letters.chars.to_a
+
+    @matrix = to_matrix(@analyzer.pairs)
+  end
+
+  def to_matrix(pairs)
+    matrix = Array.new(@letters.length) { Array.new(@letters.length, 0) }
+    pairs.each do |pr, freq|
+      a = @letters.find_index(pr[0])
+      b = @letters.find_index(pr[1])
+      matrix[a][b] = freq
+      matrix[b][a] = freq
+    end
+    matrix
+  end
+
+  def print_matrix
+    width = 5
+    print " "*width
+    @letters.each {|c| print c.to_s.ljust(width)}
+    puts
+    @letters.length.times do |r|
+      print @letters[r].ljust(width)
+      @letters.length.times do |c|
+        v = @matrix[r][c]
+        # v = (v == 0) ? 0 : Math.log10(v).round
+        s = v.to_s.ljust(width)
+        print s
+      end
+      puts
+    end
+  end
+end
+
 #binding.pry
 analyzers = {
   word: Analyzer.new("Words",dofreqs:false),
@@ -86,8 +124,11 @@ analyzers = {
   endings: Analyzer.new("end",filter:CONSONANTS),
   consonants: Analyzer.new("consonants",filter:CONSONANTS),
 }
+count = 0
 File.foreach(ARGV[0] || "/usr/share/dict/words") do |line|
   word = line.chomp.downcase
+  next unless word =~ /^[a-z]+$/
+  count += 1
   analyzers[:word].add(word)
   s = syllables(word)
   s.each do |syllable|
@@ -99,5 +140,10 @@ File.foreach(ARGV[0] || "/usr/share/dict/words") do |line|
     analyzers[:consonants].add(syllable.ending)
   end
 end
-puts "========== REPORT - THRESH=#{Analyzer::THRESH} - INPUT=#{ARGV[0]} ==========="
-analyzers.each { |name,a| a.report}
+puts "Words Analyzed: #{count}"
+# puts "========== REPORT - THRESH=#{Analyzer::THRESH} - INPUT=#{ARGV[0]} ==========="
+# analyzers.each { |name,a| a.report}
+puts "====== TRIANGLES ====="
+finder = TriangleFinder.new(analyzers[:consonants], "bcdfghjklmnpqrstvwxyz")
+# pp finder.matrix
+finder.print_matrix
