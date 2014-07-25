@@ -11,9 +11,8 @@ class Syllable
     "<#{start}+#{middle}+#{ending}>"
   end
 end
-
+THRESH = 0.0005
 class Analyzer
-  THRESH = 0.0001
   attr_accessor :pairs
   def initialize(name, options = {})
     @options = {filter:/.*/,dofreqs:true}
@@ -125,6 +124,7 @@ analyzers = {
   consonants: Analyzer.new("consonants",filter:CONSONANTS),
 }
 count = 0
+set = Hash.new(0)
 File.foreach(ARGV[0] || "/usr/share/dict/words") do |line|
   word = line.chomp.downcase
   next unless word =~ /^[a-z]+$/
@@ -132,6 +132,7 @@ File.foreach(ARGV[0] || "/usr/share/dict/words") do |line|
   analyzers[:word].add(word)
   s = syllables(word)
   s.each do |syllable|
+    set[syllable.inspect] += 1
     analyzers[:start].add(syllable.start)
     analyzers[:vowels].add(syllable.middle)
     analyzers[:endings].add(syllable.ending)
@@ -140,7 +141,10 @@ File.foreach(ARGV[0] || "/usr/share/dict/words") do |line|
     analyzers[:consonants].add(syllable.ending)
   end
 end
+# set.select! {|k,v| v > THRESH*count}
 puts "Words Analyzed: #{count}"
+puts "Unique Syllables: #{set.count}"
+p set if set.count < 200
 # puts "========== REPORT - THRESH=#{Analyzer::THRESH} - INPUT=#{ARGV[0]} ==========="
 # analyzers.each { |name,a| a.report}
 puts "====== TRIANGLES ====="

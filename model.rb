@@ -141,7 +141,7 @@ sum = 0
 count = 0
 sc = 0
 len = 0
-f = IO.read(ARGV[0] || "/usr/share/dict/words").split
+f = ARGF.read.split
 f.each do |line|
   word = line.chomp.downcase
   strokes = type_word(word)
@@ -149,7 +149,7 @@ f.each do |line|
 
   count += 1
   sum += strokes.length
-  sc += strokes.length/word.length.to_f
+  sc += word.length/strokes.length.to_f
   len += word.length
 
   if rand() < 0.0003 && word =~ /^[a-z]+$/
@@ -161,4 +161,5 @@ end
 puts "Total words: #{count}"
 puts "Average word length: #{len/count.to_f}"
 puts "Average strokes/word: #{sum/count.to_f}"
-puts "Average characters per stroke: #{1.0/(sc/count.to_f)}"
+puts "Average characters per stroke: #{sc/count.to_f}"
+puts "Total strokes: #{sum}"
