@@ -1,5 +1,5 @@
 require "json"
-counts = JSON.parse(IO.read("steno_dicts/stroke_counts.json"))
+counts = JSON.parse(IO.read("steno_dicts/stroke_counts_max.json"))
 
 sum = 0
 count = 0

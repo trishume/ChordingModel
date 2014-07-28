@@ -1,5 +1,6 @@
 # Model of VeloType typing
 require "state_machine"
+require "strscan"
 
 def load_layout
   map = {}
@@ -12,6 +13,8 @@ def load_layout
 end
 
 LAYOUT = load_layout
+SUFFIXES = /(er|ed|en|e|ion|able|ing|al)/
+# SUFFIXES = /(e)/
 
 class StrokeModel
   attr_accessor :parts, :pressed
@@ -26,7 +29,7 @@ class StrokeModel
       transition :start => same, :middle => :final, :final => same, :special => :fail,
         :special => :fail, :begin => :start
     end
-    event :ending_e do
+    event :suffix do
       transition :final => :special
     end
     event :special do
@@ -40,7 +43,7 @@ class StrokeModel
     after_transition any => :fail do |state,transition|
       raise CanNotStrokeError, "Can't transition from #{state} with #{transition}"
     end
-    after_transition :start => :middle, :middle => :final do |stroke|
+    after_transition :start => :middle, :middle => :final, :final => :special do |stroke|
       stroke.parts << ""
     end
     after_transition any => :begin do |stroke|
@@ -85,23 +88,36 @@ class StrokeModel
   end
 
   def add(c)
-    c = '&' if c=='e' && self.final?
     case c
     when /[bcdfghjklmnpqrstvwxyz]/i
       self.consonant
     when /[aoeui]/i
       self.vowel
-    when '&'
-      self.ending_e
     else
       self.special
     end
-    can_press = alloc_finger(c)
-    return :nofinger unless can_press
+    # can_press = alloc_finger(c)
+    # return :nofinger unless can_press
     @parts.last << c
     return :good
   rescue CanNotStrokeError => e
     return :notsyllable
+  end
+
+  def add_word(str)
+    sc = StringScanner.new(str)
+    loop do
+      case
+      when self.final? && sc.scan(SUFFIXES)
+        self.suffix
+        @parts.last << sc[1]
+      when (c = sc.getch)
+        res = add(c)
+        return sc.pos - 1 unless res == :good
+      else
+        return sc.pos
+      end
+    end
   end
 
   def inspect
@@ -117,49 +133,13 @@ end
 
 def type_word(word)
   all = []
-  stroke = StrokeModel.new
-  word.each_char do |c|
-    result = stroke.add(c)
-    unless result == :good
-      all << stroke
-      stroke = StrokeModel.new
-      stroke.add(c) # we need to actually use the failed letter
+  i = 0
+  loop do
+    stroke = StrokeModel.new
+    i += stroke.add_word(word[i..-1])
+    all << stroke
+    if i == word.length
+      return all
     end
   end
-  all << stroke
-  all
 end
-
-if (w = ARGV[1])
-  strokes = type_word(w)
-  p strokes
-  p strokes.map {|s| s.keys_down }
-  exit
-end
-
-sum = 0
-count = 0
-sc = 0
-len = 0
-f = ARGF.read.scrub.split
-f.each do |line|
-  word = line.chomp.downcase
-  strokes = type_word(word)
-  next unless word =~ /^[a-z]+$/
-
-  count += 1
-  sum += strokes.length
-  sc += word.length/strokes.length.to_f
-  len += word.length
-
-  # if rand() < 0.0003 && word =~ /^[a-z]+$/
-  #   puts "#{word}: #{strokes.count}"
-  #   p strokes
-  #   p strokes.map(&:keys_down)
-  # end
-end
-puts "Total words: #{count}"
-puts "Average word length: #{len/count.to_f}"
-puts "Average strokes/word: #{sum/count.to_f}"
-puts "Average characters per stroke: #{sc/count.to_f}"
-puts "Total strokes: #{sum}"
