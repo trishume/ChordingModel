@@ -141,7 +141,7 @@ sum = 0
 count = 0
 sc = 0
 len = 0
-f = ARGF.read.split
+f = ARGF.read.scrub.split
 f.each do |line|
   word = line.chomp.downcase
   strokes = type_word(word)
@@ -152,11 +152,11 @@ f.each do |line|
   sc += word.length/strokes.length.to_f
   len += word.length
 
-  if rand() < 0.0003 && word =~ /^[a-z]+$/
-    puts "#{word}: #{strokes.count}"
-    p strokes
-    p strokes.map(&:keys_down)
-  end
+  # if rand() < 0.0003 && word =~ /^[a-z]+$/
+  #   puts "#{word}: #{strokes.count}"
+  #   p strokes
+  #   p strokes.map(&:keys_down)
+  # end
 end
 puts "Total words: #{count}"
 puts "Average word length: #{len/count.to_f}"

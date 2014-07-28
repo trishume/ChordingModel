@@ -7,7 +7,7 @@ sc = 0
 len = 0
 fails = 0
 new_dict = {}
-f = ARGF.read.split
+f = ARGF.read.scrub.split
 f.each do |line|
   word = line.chomp.downcase
   next unless word =~ /^[a-z]+$/
