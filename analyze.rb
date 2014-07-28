@@ -13,7 +13,7 @@ sc = 0
 len = 0
 f = ARGF.read.scrub.split
 f.each do |line|
-  word = line.chomp.downcase
+  word = line.chomp.downcase.split.first
   next unless word =~ /^[a-z]+$/
   strokes = type_word(word)
 

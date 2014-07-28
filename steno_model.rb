@@ -9,7 +9,7 @@ fails = 0
 new_dict = {}
 f = ARGF.read.scrub.split
 f.each do |line|
-  word = line.chomp.downcase
+  word = line.chomp.downcase.split.first
   next unless word =~ /^[a-z]+$/
   strokes = counts[word]
   unless strokes
