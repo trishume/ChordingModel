@@ -2,19 +2,22 @@
 require "state_machine"
 require "strscan"
 
-def load_layout
+LAYOUT_FILE = 'layout.txt'
+LAYOUT_FINGERS = 6
+
+def load_layout(file)
   map = {}
-  File.foreach("layout.txt") do |line|
+  File.foreach(file) do |line|
     next if line.strip.empty? || line[0] == '#'
     parts = line.chomp.split
-    map[parts[0]] = parts[1..-1].map {|k| k[0].to_i}
+    map[parts[0]] = parts[1..-1].map {|k| k.split('.').first.to_i}
   end
   map
 end
 
-LAYOUT = load_layout
-SUFFIXES = /(er|ed|en|e|ion|able|ing|al)/
-# SUFFIXES = /(e)/
+LAYOUT = load_layout(LAYOUT_FILE)
+# SUFFIXES = /(er|ed|en|e|ion|able|ing|al)/
+SUFFIXES = /(e)/
 
 class StrokeModel
   attr_accessor :parts, :pressed
@@ -35,6 +38,9 @@ class StrokeModel
     event :special do
       transition :begin => :special
       transition any => :fail
+    end
+    event :collisionjump do
+      transition :start => :final
     end
     event :reset do
       transition all => :begin
@@ -58,10 +64,11 @@ class StrokeModel
     state :fail
   end
 
-  def initialize
+  def initialize(layout = LAYOUT, fingers = LAYOUT_FINGERS)
     # 2 hands with 5 fingers + palm
-    @pressed = Array.new(2) { Array.new(6,false) }
+    @pressed = Array.new(2) { Array.new(LAYOUT_FINGERS,false) }
     @state = :start
+    @layout = layout
 
     @parts = [""]
   end
@@ -73,7 +80,7 @@ class StrokeModel
   end
 
   def alloc_vowel(c)
-    finger = LAYOUT[c][0]
+    finger = @layout[c][0]
     if !press(0, finger)
       return press(1, finger)
     end
@@ -82,7 +89,7 @@ class StrokeModel
 
   def alloc_finger(c)
     return alloc_vowel(c) if self.middle?
-    fingers = LAYOUT[c]
+    fingers = @layout[c]
     layer = (self.final?) ? 1 : 0
     return fingers.all? {|finger| press(layer,finger)}
   end
@@ -96,8 +103,12 @@ class StrokeModel
     else
       self.special
     end
-    # can_press = alloc_finger(c)
-    # return :nofinger unless can_press
+    can_press = alloc_finger(c)
+    if !can_press && self.start?
+      self.collisionjump
+      can_press = alloc_finger(c)
+    end
+    return :nofinger unless can_press
     @parts.last << c
     return :good
   rescue CanNotStrokeError => e
@@ -135,7 +146,7 @@ def type_word(word)
   all = []
   i = 0
   loop do
-    stroke = StrokeModel.new
+    stroke = StrokeModel.new(LAYOUT, LAYOUT_FINGERS)
     i += stroke.add_word(word[i..-1])
     all << stroke
     if i == word.length

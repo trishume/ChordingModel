@@ -13,7 +13,7 @@ class Syllable
 end
 THRESH = 0.0005
 class Analyzer
-  attr_accessor :pairs
+  attr_accessor :pairs, :total
   def initialize(name, options = {})
     @options = {filter:/.*/,dofreqs:true}
     @options.merge!(options)
@@ -30,14 +30,14 @@ class Analyzer
     @freqs = Hash.new(0)
     @total = 0
   end
-  def add(str)
-    @total += 1
+  def add(str, weight = 1)
+    @total += weight
     @freqs[str] += 1 if @options[:dofreqs]
     str.each_char.with_index do |c1, i|
       ((i+1)..(str.length-1)).each do |i2|
        p = [str[i2],c1].sort.join('')
        next unless @pairs[p]
-       @pairs[p] += 1
+       @pairs[p] += weight
       end
     end
   end
@@ -82,15 +82,18 @@ class TriangleFinder
   def initialize(analyzer,letters)
     @analyzer = analyzer
     @letters = letters.chars.to_a
+    @indexh = @letters.map.with_index {|l,i| [l,i]}.to_h
 
-    @matrix = to_matrix(@analyzer.pairs)
+    @matrix = to_matrix(@analyzer.pairs, @analyzer.total)
+    @triangles = gen_triangles
   end
 
-  def to_matrix(pairs)
+  def to_matrix(pairs, total)
     matrix = Array.new(@letters.length) { Array.new(@letters.length, 0) }
-    pairs.each do |pr, freq|
-      a = @letters.find_index(pr[0])
-      b = @letters.find_index(pr[1])
+    pairs.each do |pr, count|
+      a = @indexh[pr[0]]
+      b = @indexh[pr[1]]
+      freq = count / total.to_f
       matrix[a][b] = freq
       matrix[b][a] = freq
     end
@@ -106,11 +109,57 @@ class TriangleFinder
       print @letters[r].ljust(width)
       @letters.length.times do |c|
         v = @matrix[r][c]
-        # v = (v == 0) ? 0 : Math.log10(v).round
+        v = (v == 0) ? 0 : (-Math.log10(v)).round(2)
         s = v.to_s.ljust(width)
         print s
       end
       puts
+    end
+  end
+
+  def letter_report
+    res = @letters.map do |c|
+      sum = @matrix[@indexh[c]].inject(:+)
+      [c,sum]
+    end
+    res.sort_by! {|a| a.last}
+    res.each {|a| puts "#{a[0]} = #{a[1]}"}
+  end
+
+  def look(a,b)
+    @matrix[@indexh[a]][@indexh[b]]
+  end
+
+  def gen_triangles
+    triangles = []
+    @letters.combination(3).each do |tri|
+      score = look(tri[0],tri[1]) + look(tri[1],tri[2]) + look(tri[0],tri[2])
+      triangles << [tri.sort.join(''),score]
+    end
+    triangles.sort_by! {|a| a.last}
+  end
+
+  def interactive_lookup
+    tri_hash = @triangles.to_h
+    loop do
+      print ">> "
+      q = gets.chomp
+      break if q == "exit"
+
+    end
+  end
+
+  def velo_report
+    tri_hash = @triangles.to_h
+    ['cpt','jkr','fsz','lny'].each do |q|
+      puts "#{q} = #{tri_hash[q]} one in #{1.0/tri_hash[q]}"
+    end
+  end
+
+  def print_top_triangles
+    @triangles.each do |tri|
+      break if tri[1]>0.002
+      p tri
     end
   end
 end
@@ -125,9 +174,8 @@ analyzers = {
 }
 count = 0
 set = Hash.new(0)
-File.foreach(ARGV[0] || "/usr/share/dict/words") do |line|
-  word = line.chomp.downcase
-  next unless word =~ /^[a-z]+$/
+File.foreach("mword10/count_words.txt") do |line|
+  word,weight = line.chomp.downcase.split
   count += 1
   analyzers[:word].add(word)
   s = syllables(word)
@@ -151,3 +199,7 @@ puts "====== TRIANGLES ====="
 finder = TriangleFinder.new(analyzers[:consonants], "bcdfghjklmnpqrstvwxyz")
 # pp finder.matrix
 finder.print_matrix
+finder.letter_report
+finder.velo_report
+# finder.print_top_triangles
+finder.interactive_lookup

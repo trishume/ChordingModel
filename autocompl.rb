@@ -68,11 +68,11 @@ words.each do |word|
 
   add_stats(stat, [1, len, word.length/len.to_f, word.length], TRIE.get(word))
 
-  if rand() < 0.0003
-    puts "#{word}: #{len}"
-    p strokes
-    # p strokes.map(&:keys_down)
-  end
+  # if rand() < 0.0003
+  #   puts "#{word}: #{len}"
+  #   p strokes
+  #   # p strokes.map(&:keys_down)
+  # end
 end
 puts "Total words: #{words.length}"
 count = stat.first.to_f
