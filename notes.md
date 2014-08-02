@@ -12,7 +12,7 @@ Velotype with autocomplete based on the first strokes (no layout): 4.26 characte
 
 ## Wanted letter keys
 Frequent: t, n, s, r, h, d, l, c
-Few pairs: y, p
+Few pairs: y, p (t,n,r,h,s,l)
 Useful for chords: j
 
 Triangle ideas: ftv, dmw
@@ -52,8 +52,16 @@ sum: 41
 10.1
 >> bgs
 9.8
+>> cgs
+11.02
+>> hln
+16.85
+>> bcs
+10.48
+>> gsy
+10.42
 
 ## Candidates
-- ftv, dmv, bnp, hlq = 42 (tnhdl)
-- ftv, dmv, jls, bhn = 46 (tshdl)
-- ftv, dmv, jlr, bgs = 41 (tsrdl)
+- ftv, dmv, bnp, hlq = 42 (tn__hdl)
+- ftv, dmv, jls, bhn = 46 (t_s_hdl)
+- ftv, dmv, jlr, bgs = 41 (t_sr_dl)

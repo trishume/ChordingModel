@@ -8,6 +8,11 @@ FREQS = {
 'y' => 2.11,'w' => 2.09,'g' => 2.03,'p' => 1.82,'b' => 1.49,
 'v' => 1.11,'k' => 0.69,'x' => 0.17,'q' => 0.11,'j' => 0.10,'z' => 0.07,
 }
+# FREQS = {"e"=>11.759, "t"=>8.753, "a"=>8.542, "o"=>8.006, "i"=>7.445,
+#   "n"=>7.143, "r"=>6.805, "s"=>5.652, "l"=>4.406, "h"=>4.036, "c"=>3.666,
+#   "d"=>3.479, "u"=>2.946, "m"=>2.771, "p"=>2.417, "f"=>2.23, "y"=>2.036,
+#   "g"=>2.034, "b"=>1.667, "w"=>1.6, "v"=>1.119, "k"=>0.763, "x"=>0.271,
+#   "j"=>0.242, "q"=>0.113, "z"=>0.1}
 LETTERS = "bcdfghjklmnpqrstvwxyz".chars.to_a
 
 triangles = JSON.load(IO.read("data/triangles.json"))
@@ -79,11 +84,11 @@ end
 decided = ['ftv','dmw']
 # decided = []
 candidates = triangles.reject {|t| decided.any? {|t2| intersect?(t[0],t2)} }
-candidates.map {|t| t + [score(t[0])]}.sort_by {|t| -t[2]}.take(30).each {|t| p t}
+# candidates.map {|t| t + [score(t[0])]}.sort_by {|t| -t[2]}.take(30).each {|t| p t}
 
-# pairs = all_pairs(candidates)
-# pairs.map! {|p| p + [score_pair(p[0],p[1]), score(p[0]), score(p[1])]}
-# pairs.sort_by! {|p| -p[2]}
-# pairs.take(20).each {|t| p t}
+pairs = all_pairs(candidates)
+pairs.map! {|p| p + [score_pair(p[0],p[1]), score(p[0]), score(p[1])]}
+pairs.sort_by! {|p| -p[2]}
+pairs.take(20).each {|t| p t}
 
 # interactive_lookup

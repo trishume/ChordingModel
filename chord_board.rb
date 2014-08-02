@@ -14,9 +14,9 @@ class Syllable
 end
 THRESH = 0.0005
 class Analyzer
-  attr_accessor :pairs, :total
+  attr_accessor :pairs, :total, :letterfreqs
   def initialize(name, options = {})
-    @options = {filter:/.*/,dofreqs:true}
+    @options = {filter:/.*/,dofreqs:true, letterfreqs: false}
     @options.merge!(options)
     @name = name
     @pairs = Hash.new
@@ -29,6 +29,8 @@ class Analyzer
       end
     end
     @freqs = Hash.new(0)
+    @letterfreqs = Hash.new(0)
+    @lettertotal = 0
     @total = 0
   end
   def add(str, weight = 1)
@@ -39,6 +41,13 @@ class Analyzer
        p = [str[i2],c1].sort.join('')
        next unless @pairs[p]
        @pairs[p] += weight
+      end
+    end
+
+    if @options[:letterfreqs]
+      @lettertotal += weight * str.length
+      str.each_char do |c|
+        @letterfreqs[c] += weight
       end
     end
   end
@@ -54,9 +63,16 @@ class Analyzer
   def report
     puts "# Analyzer report for: #{@name} =========="
     puts "Total possibilities: #{@freqs.size}" if @options[:dofreqs]
-    zer = zeros
-    puts "Zeros: #{zer.size}/#{@pairs.size} = #{zer.size / pairs.size.to_f}"
-    p zer
+    if @options[:letterfreqs]
+      @letterfreqs.each {|k,v| @letterfreqs[k] = v / @lettertotal.to_f}
+      puts "Letter frequencies:"
+      p @letterfreqs
+      total = @letterfreqs.to_a.map { |e| e[1] }.inject(:+)
+      puts "Total: #{total}"
+    end
+    # zer = zeros
+    # puts "Zeros: #{zer.size}/#{@pairs.size} = #{zer.size / pairs.size.to_f}"
+    # p zer
   end
 end
 
@@ -179,41 +195,55 @@ end
 
 #binding.pry
 analyzers = {
-  word: Analyzer.new("Words",dofreqs:false),
-  start: Analyzer.new("start",filter:CONSONANTS),
+  word: Analyzer.new("Words",dofreqs:false, letterfreqs: true),
+  start: Analyzer.new("start",filter:CONSONANTS,letterfreqs: true),
   vowels: Analyzer.new("vowels",filter:VOWELS),
-  endings: Analyzer.new("end",filter:CONSONANTS),
+  endings: Analyzer.new("end",filter:CONSONANTS,letterfreqs: true),
   consonants: Analyzer.new("consonants",filter:CONSONANTS),
 }
 count = 0
 set = Hash.new(0)
 File.foreach("mword10/count_words.txt") do |line|
   word,weight = line.chomp.downcase.split
+  weight = weight.to_i
   count += 1
-  analyzers[:word].add(word)
+  analyzers[:word].add(word, weight)
   s = syllables(word)
   s.each do |syllable|
     set[syllable.inspect] += 1
-    analyzers[:start].add(syllable.start)
-    analyzers[:vowels].add(syllable.middle)
-    analyzers[:endings].add(syllable.ending)
+    analyzers[:start].add(syllable.start, weight)
+    analyzers[:vowels].add(syllable.middle, weight)
+    analyzers[:endings].add(syllable.ending, weight)
 
-    analyzers[:consonants].add(syllable.start)
-    analyzers[:consonants].add(syllable.ending)
+    analyzers[:consonants].add(syllable.start, weight)
+    analyzers[:consonants].add(syllable.ending, weight)
   end
 end
 # set.select! {|k,v| v > THRESH*count}
 puts "Words Analyzed: #{count}"
 puts "Unique Syllables: #{set.count}"
 p set if set.count < 200
-# puts "========== REPORT - THRESH=#{Analyzer::THRESH} - INPUT=#{ARGV[0]} ==========="
-# analyzers.each { |name,a| a.report}
+puts "========== REPORT - THRESH=#{Analyzer::THRESH} - INPUT=#{ARGV[0]} ==========="
+analyzers[:word].report
+analyzers[:start].report
+analyzers[:endings].report
+puts "=== Word freqs"
+p analyzers[:word].letterfreqs.to_a.sort_by {|a| a[1]}.reverse
+puts "=== Freq difference (start - end)"
+diffs = analyzers[:start].letterfreqs.to_a.map do |a|
+  freq2 = analyzers[:endings].letterfreqs[a[0]]
+  a + [freq2, a[1] - freq2]
+end
+diffs.sort_by! {|a| a[3]}
+diffs.each do |a|
+  puts "#{a[0]}: #{a[3]} = #{a[1]} - #{a[2]}"
+end
 puts "====== TRIANGLES ====="
 finder = TriangleFinder.new(analyzers[:consonants], "bcdfghjklmnpqrstvwxyz")
 # pp finder.matrix
 finder.print_matrix
 finder.letter_report
 finder.velo_report
-finder.print_top_triangles
+# finder.print_top_triangles
 # finder.interactive_lookup
 # puts finder.matrix_hash.to_yaml
