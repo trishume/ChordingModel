@@ -40,7 +40,7 @@ def complete_word(word)
   end
 end
 
-if word = ARGV[0]
+if word = ARGV[0] && word != 'type'
   first_stroke = StrokeModel.new
   first_stroke.add_word(word)
   puts "First stroke: #{first_stroke.inspect}"
@@ -62,8 +62,9 @@ count = 0
 sc = 0
 len = 0
 stat = [0,0,0,0]
+type = (ARGV[0] == 'type') ? true : false
 words.each do |word|
-  strokes = complete_word(word)
+  strokes = type ? type_word(word) : complete_word(word)
   len = strokes.length
 
   add_stats(stat, [1, len, word.length/len.to_f, word.length], TRIE.get(word))

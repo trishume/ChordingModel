@@ -1,4 +1,5 @@
 require "pry"
+require "yaml"
 class Syllable
   attr_accessor :start,:middle,:ending
   def initialize(*args)
@@ -117,6 +118,18 @@ class TriangleFinder
     end
   end
 
+  def matrix_hash
+    h = {}
+    matrix.each_with_index do |row, i|
+      h2 = {}
+      row.each_with_index do |p, j|
+        h2[@letters[j]] = p
+      end
+      h[@letters[i]] = h2
+    end
+    h
+  end
+
   def letter_report
     res = @letters.map do |c|
       sum = @matrix[@indexh[c]].inject(:+)
@@ -157,10 +170,10 @@ class TriangleFinder
   end
 
   def print_top_triangles
-    @triangles.each do |tri|
-      break if tri[1]>0.002
-      p tri
-    end
+    good = @triangles.select {|tri| tri[1]<0.004}
+    puts "["
+    good.each {|a| puts "#{a.inspect},"}
+    puts ']'
   end
 end
 
@@ -201,5 +214,6 @@ finder = TriangleFinder.new(analyzers[:consonants], "bcdfghjklmnpqrstvwxyz")
 finder.print_matrix
 finder.letter_report
 finder.velo_report
-# finder.print_top_triangles
-finder.interactive_lookup
+finder.print_top_triangles
+# finder.interactive_lookup
+# puts finder.matrix_hash.to_yaml
