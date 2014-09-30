@@ -81,8 +81,8 @@ end
 # decent = find_chord_pair(triangles, matrix)
 # decent.map {|t| t + [score_pair(t[0],t[1]), score(t[0]), score(t[1])]}.sort_by {|t| -t[3]}.take(30).each {|t| p t}
 
-decided = ['ftv','dmw']
-# decided = []
+# decided = ['ftv','dmw']
+decided = []
 candidates = triangles.reject {|t| decided.any? {|t2| intersect?(t[0],t2)} }
 # candidates.map {|t| t + [score(t[0])]}.sort_by {|t| -t[2]}.take(30).each {|t| p t}
 

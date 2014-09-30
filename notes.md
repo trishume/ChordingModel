@@ -62,6 +62,7 @@ sum: 41
 10.42
 
 ## Candidates
-- ftv, dmv, bnp, hlq = 42 (tn__hdl)
-- ftv, dmv, jls, bhn = 46 (t_s_hdl)
-- ftv, dmv, jlr, bgs = 41 (t_sr_dl)
+- jkr, cpt, fsz, lny = 41 (tnsr__l)
+- ftv, dmw, bnp, hlq = 42 (tn__hdl)
+- ftv, dmw, jls, bhn = 46 (t_s_hdl)
+- ftv, dmw, jlr, bgs = 41 (t_sr_dl)

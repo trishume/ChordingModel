@@ -2,7 +2,7 @@
 require "state_machine"
 require "strscan"
 
-LAYOUT_FILE = 'layout.txt'
+LAYOUT_FILE = 'layout2.txt'
 LAYOUT_FINGERS = 6
 
 def load_layout(file)
