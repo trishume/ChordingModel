@@ -39,6 +39,7 @@ count = 0
 sc = 0
 len = 0
 stat = [0,0,0,0,0]
+puts "Processing #{words.length} words"
 words.each_with_index do |word,i|
   strokes = type_word_lay(word, LAYOUT, LAYOUT_FINGERS)
   strokes2 = type_word_lay(word, PERFECT_LAYOUT, LAYOUT_FINGERS2)

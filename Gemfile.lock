@@ -1,6 +1,7 @@
 GEM
   remote: https://rubygems.org/
   specs:
+    aggregate (0.2.2)
     fast_trie (0.5.0)
     state_machine (1.2.0)
 
@@ -8,5 +9,6 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
+  aggregate
   fast_trie
   state_machine

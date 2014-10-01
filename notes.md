@@ -61,8 +61,26 @@ sum: 41
 >> gsy
 10.42
 
+## Attempt 2
+Try pair with high frequency, then a low frequency pair for doubles.
+
+["lmn", "dft", 29.259999999999998, 13.54, 15.719999999999999]
+["svw", "grx", 0.009580517791156798, 17.7, 9.48, 8.219999999999999]
+sum: 47
+
+["nrx", "dmt", 29.17, 13.139999999999999, 16.03]
+
+Trying high freq, then pairs that don't conflict with leftovers
+["lmn", "dft", 29.259999999999998, 13.54, 15.719999999999999]
+["jqv", "bsw", 0.03475060148039001, 11.18, 1.32, 9.86]
+sum: 40
+
 ## Candidates
 - jkr, cpt, fsz, lny = 41 (tnsr__l)
 - ftv, dmw, bnp, hlq = 42 (tn__hdl)
 - ftv, dmw, jls, bhn = 46 (t_s_hdl)
 - ftv, dmw, jlr, bgs = 41 (t_sr_dl)
+
+gen2 [Best 2 pairs, then best chord pair]
+- dft, lmn, svw, grx = 47 (tnsr_dl) [Hbcjkpqyz]
+- dft, lmn, bsw, jqv = 40 (tns__dl) [Hcgkprxyz]
